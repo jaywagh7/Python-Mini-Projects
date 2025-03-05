@@ -4,6 +4,8 @@ from PIL import Image, ImageTk
 import sqlite3
 import requests
 from database import Database
+from forgot_password import ForgotPasswordWindow
+from otp_verification import OTPVerification
 
 # Initialize database
 db = Database("users.db")
@@ -23,8 +25,9 @@ def login():
     password = entry_password.get()
     
     if db.validate_user(username, password):
-        messagebox.showinfo("Login Success", f"Welcome, {username}!")
-        root.destroy()  # Close login window
+        messagebox.showinfo("Login Success", f"OTP Verification Required")
+        OTPVerification(username)
+        root.destroy()
     else:
         attempts -= 1
         if attempts > 0:
@@ -38,10 +41,14 @@ def open_register():
     import register
     register.RegisterWindow()
 
+# Function to open forgot password window
+def open_forgot_password():
+    ForgotPasswordWindow()
+
 # Creating the main window
 root = tk.Tk()
 root.title("Login System")
-root.geometry("400x500")
+root.geometry("400x550")
 root.configure(bg="#2C3E50")
 
 # Load image
@@ -74,10 +81,18 @@ entry_password.grid(row=1, column=1, pady=5, padx=10)
 btn_toggle = tk.Button(frame, text="Show", font=("Helvetica", 10), command=toggle_password)
 btn_toggle.grid(row=1, column=2, padx=5)
 
-btn_login = tk.Button(frame, text="Login", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="#ECF0F1", width=15, command=login)
-btn_login.grid(row=2, columnspan=2, pady=20)
+# Login and Register Buttons in the Same Alignment
+btn_frame = tk.Frame(frame, bg="#34495E")
+btn_frame.grid(row=2, columnspan=2, pady=10)
 
-btn_register = tk.Button(root, text="Register", font=("Helvetica", 12), command=open_register)
-btn_register.pack(pady=5)
+btn_login = tk.Button(btn_frame, text="Login", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="#ECF0F1", width=12, command=login)
+btn_login.pack(side=tk.LEFT, padx=5)
+
+btn_register = tk.Button(btn_frame, text="Register", font=("Helvetica", 12), bg="#27AE60", fg="#ECF0F1", width=12, command=open_register)
+btn_register.pack(side=tk.LEFT, padx=5)
+
+# Forgot Password Button Just Below Login & Register Buttons
+btn_forgot_password = tk.Button(frame, text="Forgot Password?", font=("Helvetica", 10), bg="#3498DB", fg="#ECF0F1", command=open_forgot_password)
+btn_forgot_password.grid(row=3, columnspan=2, pady=10)
 
 root.mainloop()

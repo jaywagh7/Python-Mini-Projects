@@ -1,5 +1,7 @@
 import sqlite3
 import hashlib
+import datetime
+import random
 
 class Database:
     def __init__(self, db_name="users.db"):
@@ -9,41 +11,81 @@ class Database:
 
     def create_table(self):
         self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS users (
+            """
+            CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 username TEXT UNIQUE,
                 password TEXT,
                 security_question TEXT,
-                security_answer TEXT
-            )"""
+                security_answer TEXT,
+                email TEXT UNIQUE,
+                profile_picture TEXT
+            )
+            """
+        )
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS login_logs (
+                id INTEGER PRIMARY KEY,
+                username TEXT,
+                timestamp TEXT,
+                status TEXT
+            )
+            """
         )
         self.conn.commit()
 
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
 
-    def add_user(self, username, password, security_question, security_answer):
+    def add_user(self, username, password, security_question, security_answer, email, profile_picture=""):
         try:
             hashed_pw = self.hash_password(password)
-            self.cursor.execute(
-                "INSERT INTO users (username, password, security_question, security_answer) VALUES (?, ?, ?, ?)",
-                (username, hashed_pw, security_question, security_answer)
-            )
+            hashed_answer = self.hash_password(security_answer)
+            self.cursor.execute("""
+                INSERT INTO users (username, password, security_question, security_answer, email, profile_picture)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (username, hashed_pw, security_question, hashed_answer, email, profile_picture))
             self.conn.commit()
             return True
         except sqlite3.IntegrityError:
-            return False  # Username already exists
+            return False  # Username or email already exists
+
+    def validate_user(self, username, password):
+        hashed_pw = self.hash_password(password)
+        self.cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, hashed_pw))
+        return self.cursor.fetchone() is not None
+
+    def log_login_attempt(self, username, status):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.cursor.execute("INSERT INTO login_logs (username, timestamp, status) VALUES (?, ?, ?)", (username, timestamp, status))
+        self.conn.commit()
 
     def get_security_question(self, username):
         self.cursor.execute("SELECT security_question FROM users WHERE username=?", (username,))
-        return self.cursor.fetchone()
+        result = self.cursor.fetchone()
+        return result[0] if result else None
 
-    def validate_security_answer(self, username, answer):
-        self.cursor.execute("SELECT security_answer FROM users WHERE username=?", (username,))
-        stored_answer = self.cursor.fetchone()
-        return stored_answer and stored_answer[0] == answer
+    def reset_password(self, username, security_answer, new_password):
+        hashed_answer = self.hash_password(security_answer)
+        self.cursor.execute("SELECT * FROM users WHERE username=? AND security_answer=?", (username, hashed_answer))
+        if self.cursor.fetchone():
+            hashed_new_pw = self.hash_password(new_password)
+            self.cursor.execute("UPDATE users SET password=? WHERE username=?", (hashed_new_pw, username))
+            self.conn.commit()
+            return True
+        return False
 
-    def update_password(self, username, new_password):
-        hashed_pw = self.hash_password(new_password)
-        self.cursor.execute("UPDATE users SET password=? WHERE username=?", (hashed_pw, username))
+    def generate_otp(self):
+        return random.randint(100000, 999999)
+
+    def update_profile(self, username, new_username=None, new_password=None, new_profile_picture=None):
+        if new_username:
+            self.cursor.execute("UPDATE users SET username=? WHERE username=?", (new_username, username))
+        if new_password:
+            hashed_pw = self.hash_password(new_password)
+            self.cursor.execute("UPDATE users SET password=? WHERE username=?", (hashed_pw, username))
+        if new_profile_picture:
+            self.cursor.execute("UPDATE users SET profile_picture=? WHERE username=?", (new_profile_picture, username))
         self.conn.commit()
+        return True
