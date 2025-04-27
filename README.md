@@ -5,6 +5,7 @@ A collection of Python mini-projects to help you learn and explore different pro
 ## Table of Contents
 
 1. [Project 1: Python Login System ](#project-1-login_system)
+2. [Project 2: Advanced Tic Tac Toe 🎮](#project-2-python-game) 
 
 [How to Run](#how-to-run)
 [Contributing](#contributing)
