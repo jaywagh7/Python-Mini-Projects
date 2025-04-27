@@ -25,9 +25,17 @@ def login():
     password = entry_password.get()
     
     if db.validate_user(username, password):
-        messagebox.showinfo("Login Success", f"OTP Verification Required")
-        OTPVerification(username)
-        root.destroy()
+        email = db.get_user_email(username)
+        if email:
+            otp_window = OTPVerification(username)
+            root.wait_window(otp_window.top)
+            if otp_window.otp_verified:
+                messagebox.showinfo("Login Success", f"Welcome, {username}!")
+                root.destroy()
+            else:
+                messagebox.showerror("OTP Failed", "Invalid OTP. Login Aborted.")
+        else:
+            messagebox.showerror("Login Failed", "Email not found. Please contact support.")
     else:
         attempts -= 1
         if attempts > 0:
@@ -83,7 +91,7 @@ btn_toggle.grid(row=1, column=2, padx=5)
 
 # Login and Register Buttons in the Same Alignment
 btn_frame = tk.Frame(frame, bg="#34495E")
-btn_frame.grid(row=2, columnspan=2, pady=10)
+btn_frame.grid(row=2, columnspan=2, pady=20)
 
 btn_login = tk.Button(btn_frame, text="Login", font=("Helvetica", 12, "bold"), bg="#E74C3C", fg="#ECF0F1", width=12, command=login)
 btn_login.pack(side=tk.LEFT, padx=5)
@@ -91,8 +99,8 @@ btn_login.pack(side=tk.LEFT, padx=5)
 btn_register = tk.Button(btn_frame, text="Register", font=("Helvetica", 12), bg="#27AE60", fg="#ECF0F1", width=12, command=open_register)
 btn_register.pack(side=tk.LEFT, padx=5)
 
-# Forgot Password Button Just Below Login & Register Buttons
-btn_forgot_password = tk.Button(frame, text="Forgot Password?", font=("Helvetica", 10), bg="#3498DB", fg="#ECF0F1", command=open_forgot_password)
-btn_forgot_password.grid(row=3, columnspan=2, pady=10)
+# Forgot Password Button Centered Below
+btn_forgot_password = tk.Button(root, text="Forgot Password?", font=("Helvetica", 10), bg="#3498DB", fg="#ECF0F1", command=open_forgot_password)
+btn_forgot_password.pack(pady=5)
 
 root.mainloop()

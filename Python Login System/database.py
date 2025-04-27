@@ -75,6 +75,13 @@ class Database:
             self.conn.commit()
             return True
         return False
+    
+    # this is get_user_email method
+    def get_user_email(self, username):
+        self.cursor.execute("SELECT email FROM users WHERE username = ?", (username,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
 
     def generate_otp(self):
         return random.randint(100000, 999999)
