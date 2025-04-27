@@ -2,7 +2,7 @@ import sqlite3
 import hashlib
 import datetime
 import random
-
+#
 class Database:
     def __init__(self, db_name="users.db"):
         self.conn = sqlite3.connect(db_name)

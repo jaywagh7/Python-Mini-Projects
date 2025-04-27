@@ -7,7 +7,7 @@ from database import Database
 from forgot_password import ForgotPasswordWindow
 from otp_verification import OTPVerification
 
-# Initialize database
+# Initialize database#
 db = Database("users.db")
 
 # Function to toggle password visibility

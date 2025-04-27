@@ -3,7 +3,7 @@ from tkinter import messagebox
 from database import Database
 
 db = Database()
-
+#
 class ForgotPasswordWindow:
     def __init__(self):
         self.window = tk.Tk()

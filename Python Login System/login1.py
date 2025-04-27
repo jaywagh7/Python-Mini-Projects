@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 import requests
 from io import BytesIO
 
-# Function to manage the login
+# Function to manage the login#
 def login():
     username = entry_username.get()
     password = entry_password.get()

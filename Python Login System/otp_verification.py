@@ -5,7 +5,7 @@ import smtplib
 import time
 from database import Database
 
-# Initialize database
+# Initialize database#
 db = Database("users.db")
 
 class OTPVerification:
